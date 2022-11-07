@@ -17,8 +17,14 @@ export default class FindClientUseCase {
     return {
       id: client.id.id,
       name: client.name,
+      document: client.document,
       email: client.email,
-      address: client.address,
+      street: client.address.street,
+      complement: client.address.complement,
+      number: client.address.number,
+      city: client.address.city,
+      state: client.address.state,
+      zipCode: client.address.zipCode,
       createdAt: client.createdAt,
       updatedAt: client.updatedAt,
     };
