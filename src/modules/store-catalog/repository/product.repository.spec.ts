@@ -1,32 +1,57 @@
 import { Sequelize } from "sequelize-typescript";
 import ProductModel from "./product.model";
 import ProductRepository from "./product.repository";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
 describe("ProductRepository test", () => {
   let sequelize: Sequelize;
+  let seeder: any;
+  dotenv.config();
 
-  beforeEach(async () => {
-    sequelize = new Sequelize({
-      dialect: "sqlite",
-      storage: ":memory:",
-      logging: false,
-      sync: { force: true },
-    });
+  beforeEach(async ()=>{
+      sequelize = new Sequelize({
+          dialect: process.env.DB_DIALECT as Dialect,
+          storage: process.env.DB_STORAGE,
+          logging: false
+      })
+        
+      var seedsConfig = {
+        storage: "sequelize",
+        storageOptions: {
+          sequelize: sequelize,
+          modelName: 'SequelizeData'
+        },
+        migrations: {
+          params: [
+            sequelize.getQueryInterface(),
+            sequelize.constructor
+          ],
+          path: "./seeders",
+          pattern: /\.js$/
+        }
+      };
 
-    await sequelize.addModels([ProductModel]);
-    await sequelize.sync();
-  });
+      seeder = new Umzug(seedsConfig);    
+      await seeder.up();
 
-  afterEach(async () => {
+      sequelize.addModels([ProductModel]);
+  })
+
+  afterEach(async ()=>{
+    await seeder.down();
     await sequelize.close();
-  });
-
+  })
+  
   it("should find all products", async () => {
     await ProductModel.create({
       id: "1",
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      createdAt: Date(),
+      updatedAt: Date()
     });
 
     await ProductModel.create({
@@ -34,6 +59,8 @@ describe("ProductRepository test", () => {
       name: "Product 2",
       description: "Description 2",
       salesPrice: 200,
+      createdAt: Date(),
+      updatedAt: Date()
     });
 
     const productRepository = new ProductRepository();
@@ -56,6 +83,8 @@ describe("ProductRepository test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      createdAt: Date(),
+      updatedAt: Date()
     });
 
     const productRepository = new ProductRepository();

@@ -3,7 +3,7 @@ import Client from "../domain/entity/client.entity";
 import clientEntity from "../domain/entity/client.entity";
 import Address from "../domain/value-object/address";
 import ClientGateway from "../gateway/client.gateway";
-import { ClientModel } from "./client.model";
+import ClientModel from "./client.model";
 
 export default class ClientRepository implements ClientGateway {
   async add(client: clientEntity): Promise<void> {

@@ -1,29 +1,52 @@
 import { Sequelize } from "sequelize-typescript";
 import { FindStoreCatalogFacadeInputDto } from "../../store-catalog/facade/store-catalog.facade.interface";
 import InvoiceFactory from "../factory/facade.factory";
-import { InvoiceItemModel } from "../repository/invoice-item.model";
-import { InvoiceModel } from "../repository/invoice.model";
-import { ProductModel } from "../repository/product.model";
+import InvoiceItemModel from "../repository/invoice-item.model";
+import InvoiceModel from "../repository/invoice.model";
+import ProductModel from "../repository/product.model";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
-describe("Invoice Repository Unit Tests", ()=>{
-    let sequelize : Sequelize;
-
+describe("Invoice Facade Unit Tests", ()=>{
+    let sequelize: Sequelize;
+    let seeder: any;
+    dotenv.config();
+  
     beforeEach(async ()=>{
         sequelize = new Sequelize({
-            dialect: "sqlite",
-            database: ":memory:",
-            logging: false,
-            sync: { force: true }
+            dialect: process.env.DB_DIALECT as Dialect,
+            storage: process.env.DB_STORAGE,
+            logging: false
         })
+          
+        var seedsConfig = {
+          storage: "sequelize",
+          storageOptions: {
+            sequelize: sequelize,
+            modelName: 'SequelizeData'
+          },
+          migrations: {
+            params: [
+              sequelize.getQueryInterface(),
+              sequelize.constructor
+            ],
+            path: "./seeders",
+            pattern: /\.js$/
+          }
+        };
+  
+        seeder = new Umzug(seedsConfig);    
+        await seeder.up();
 
         sequelize.addModels([ProductModel, InvoiceItemModel, InvoiceModel]);
-        await sequelize.sync();
     })
-
+  
     afterEach(async ()=>{
+        await seeder.down();
         await sequelize.close();
     })
-
+    
     it("Should list a invoice", async ()=>{
         await createProducts();
 
@@ -103,7 +126,9 @@ describe("Invoice Repository Unit Tests", ()=>{
                     name: "product 2", 
                     price: 10.52,
                 }
-            ]        
+            ],
+            createdAt: new Date(),
+            updatedAt: new Date()       
         }
 
         const invoiceFacade = InvoiceFactory.create({
@@ -135,6 +160,8 @@ let product01 = {
     name: "product 1",
     description: "product A",
     salesPrice: 52,
+    createdAt: new Date(),
+    updatedAt: new Date()
 };
 
 let product02 = {
@@ -142,6 +169,8 @@ let product02 = {
     name: "product 2",
     description: "product A",
     salesPrice: 10.52,
+    createdAt: new Date(),
+    updatedAt: new Date()
 };
 
 let product05 = {
@@ -149,6 +178,8 @@ let product05 = {
     name: "product 5",
     description: "product x",
     salesPrice: 5.50,
+    createdAt: new Date(),
+    updatedAt: new Date()
 };
 
 const MockStoreCatalogFacade = () =>{
@@ -173,7 +204,9 @@ async function createProducts() {
             await ProductModel.create({
                 id: product.id,
                 name: product.name,
-                price: product.salesPrice
+                price: product.salesPrice,
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt
             });
         })
     )

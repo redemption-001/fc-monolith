@@ -1,28 +1,51 @@
 import { Sequelize } from "sequelize-typescript";
 import ClientAdmFacadeFactory from "../factory/client-adm.facade.factory";
-import { ClientModel } from "../repository/client.model";
+import ClientModel from "../repository/client.model";
 import ClientRepository from "../repository/client.repository";
 import AddClientUseCase from "../usecase/add-client/add-client.usecase";
 import ClientAdmFacade from "./client-adm.facade";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
 describe("ClientAdmFacade test", () => {
   let sequelize: Sequelize;
+  let seeder: any;
+  dotenv.config();
 
-  beforeEach(async () => {
+  beforeEach(async ()=>{
     sequelize = new Sequelize({
-      dialect: "sqlite",
-      storage: ":memory:",
-      logging: false,
-      sync: { force: true },
-    });
+        dialect: process.env.DB_DIALECT as Dialect,
+        storage: process.env.DB_STORAGE,
+        logging: false
+    })
+      
+    var seedsConfig = {
+      storage: "sequelize",
+      storageOptions: {
+        sequelize: sequelize,
+        modelName: 'SequelizeData'
+      },
+      migrations: {
+        params: [
+          sequelize.getQueryInterface(),
+          sequelize.constructor
+        ],
+        path: "./seeders",
+        pattern: /\.js$/
+      }
+    };
 
-    await sequelize.addModels([ClientModel]);
-    await sequelize.sync();
-  });
+    seeder = new Umzug(seedsConfig);    
+    await seeder.up();
 
-  afterEach(async () => {
-    await sequelize.close();
-  });
+    sequelize.addModels([ClientModel]);
+})
+
+afterEach(async ()=>{
+  await seeder.down();
+  await sequelize.close();
+})
 
   it("should create a client", async () => {
     const repository = new ClientRepository();

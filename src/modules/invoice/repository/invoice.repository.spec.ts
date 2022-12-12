@@ -3,41 +3,68 @@ import Id from "../../@shared/domain/value-object/id.value-object";
 import Invoice from "../domain/entity/invoice.entity";
 import Product from "../domain/entity/product.entity";
 import Address from "../domain/value-object/address";
-import { InvoiceItemModel } from "./invoice-item.model";
-import { InvoiceModel } from "./invoice.model";
+import InvoiceItemModel from "./invoice-item.model";
+import InvoiceModel from "./invoice.model";
 import InvoiceRepository from "./invoice.repository";
-import { ProductModel } from "./product.model";
+import ProductModel from "./product.model";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
 describe("Invoice Repository Unit Tests", ()=>{
-    let sequelize : Sequelize;
-
+    let sequelize: Sequelize;
+    let seeder: any;
+    dotenv.config();
+  
     beforeEach(async ()=>{
         sequelize = new Sequelize({
-            dialect: "sqlite",
-            database: ":memory:",
-            logging: false,
-            sync: { force: true }
+            dialect: process.env.DB_DIALECT as Dialect,
+            storage: process.env.DB_STORAGE,
+            logging: false
         })
+          
+        var seedsConfig = {
+          storage: "sequelize",
+          storageOptions: {
+            sequelize: sequelize,
+            modelName: 'SequelizeData'
+          },
+          migrations: {
+            params: [
+              sequelize.getQueryInterface(),
+              sequelize.constructor
+            ],
+            path: "./seeders",
+            pattern: /\.js$/
+          }
+        };
+  
+        seeder = new Umzug(seedsConfig);    
+        await seeder.up();
 
         sequelize.addModels([ProductModel, InvoiceItemModel, InvoiceModel]);
-        await sequelize.sync();
     })
-
+  
     afterEach(async ()=>{
+        await seeder.down();
         await sequelize.close();
     })
-
+    
     it("Should list a invoice", async ()=>{
         await ProductModel.create({
             id: "p1",
             name: "product 1",
-            price: 77.78
+            price: 77.78,
+            createdAt: Date(),
+            updatedAt: Date()
         });
         
         await ProductModel.create({
             id: "p2",
             name: "product 2",
-            price: 2.02
+            price: 2.02,
+            createdAt: Date(),
+            updatedAt: Date()
         });
 
         const today = new Date();
@@ -98,13 +125,17 @@ describe("Invoice Repository Unit Tests", ()=>{
         await ProductModel.create({
             id: "p2",
             name: "product 2",
-            price: 2.02
+            price: 2.02,
+            createdAt: Date(),
+            updatedAt: Date()
         });
     
         await ProductModel.create({
             id: "p3",
             name: "product 3",
-            price: 1.50
+            price: 1.50,
+            createdAt: Date(),
+            updatedAt: Date()
         });
 
         const repository = new InvoiceRepository();
@@ -132,7 +163,8 @@ describe("Invoice Repository Unit Tests", ()=>{
                     price: 1.50
                 })
             ], 
-            createdAt: new Date()
+            createdAt: new Date(),
+            updateAt: new Date()
         })
         await repository.save(invoice);
 
@@ -172,7 +204,9 @@ describe("Invoice Repository Unit Tests", ()=>{
         await ProductModel.create({
             id: "p2",
             name: "product 2",
-            price: 2.02
+            price: 2.02,
+            createdAt: Date(),
+            updatedAt: Date()
         });
 
         const repository = new InvoiceRepository();
@@ -199,7 +233,9 @@ describe("Invoice Repository Unit Tests", ()=>{
                     name: "product 3",
                     price: 1.50
                 })
-            ]
+            ],
+            createdAt: new Date(),
+            updateAt: new Date()
         })
 
         expect(async ()=>{
