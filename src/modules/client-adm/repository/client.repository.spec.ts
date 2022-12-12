@@ -2,27 +2,51 @@ import { Sequelize } from "sequelize-typescript";
 import Id from "../../@shared/domain/value-object/id.value-object";
 import Client from "../domain/entity/client.entity";
 import Address from "../domain/value-object/address";
-import { ClientModel } from "./client.model";
+import ClientModel from "./client.model";
 import ClientRepository from "./client.repository";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
 describe("ClientRepository test", () => {
+
   let sequelize: Sequelize;
+  let seeder: any;
+  dotenv.config();
 
-  beforeEach(async () => {
-    sequelize = new Sequelize({
-      dialect: "sqlite",
-      storage: ":memory:",
-      logging: false,
-      sync: { force: true },
-    });
+  beforeEach(async ()=>{
+      sequelize = new Sequelize({
+          dialect: process.env.DB_DIALECT as Dialect,
+          storage: process.env.DB_STORAGE,
+          logging: false
+      })
+        
+      var seedsConfig = {
+        storage: "sequelize",
+        storageOptions: {
+          sequelize: sequelize,
+          modelName: 'SequelizeData'
+        },
+        migrations: {
+          params: [
+            sequelize.getQueryInterface(),
+            sequelize.constructor
+          ],
+          path: "./seeders",
+          pattern: /\.js$/
+        }
+      };
 
-    await sequelize.addModels([ClientModel]);
-    await sequelize.sync();
-  });
+      seeder = new Umzug(seedsConfig);    
+      await seeder.up();
 
-  afterEach(async () => {
+      sequelize.addModels([ClientModel]);
+  })
+
+  afterEach(async ()=>{
+    await seeder.down();
     await sequelize.close();
-  });
+  })
 
   it("should create a client", async () => {
     const client = new Client({
