@@ -3,9 +3,9 @@ import Invoice from "../domain/entity/invoice.entity";
 import Product from "../domain/entity/product.entity";
 import Address from "../domain/value-object/address";
 import InvoiceGateway from "../gateway/invoice.gateway.interface";
-import { InvoiceItemModel } from "./invoice-item.model";
-import { InvoiceModel } from "./invoice.model";
-import { ProductModel } from "./product.model";
+import InvoiceItemModel from "./invoice-item.model";
+import InvoiceModel from "./invoice.model";
+import ProductModel from "./product.model";
 
 export default class InvoiceRepository implements InvoiceGateway{
     async find(id: string): Promise<Invoice> {
