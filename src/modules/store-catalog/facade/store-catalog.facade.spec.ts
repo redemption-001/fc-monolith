@@ -1,26 +1,49 @@
 import { Sequelize } from "sequelize-typescript";
 import StoreCatalogFacadeFactory from "../factory/facade.factory";
 import ProductModel from "../repository/product.model";
+var Umzug = require("umzug");
+import dotenv from "dotenv";
+import { Dialect } from "sequelize/types";
 
 describe("StoreCatalogFacade test", () => {
   let sequelize: Sequelize;
+  let seeder: any;
+  dotenv.config();
 
-  beforeEach(async () => {
-    sequelize = new Sequelize({
-      dialect: "sqlite",
-      storage: ":memory:",
-      logging: false,
-      sync: { force: true },
-    });
+  beforeEach(async ()=>{
+      sequelize = new Sequelize({
+          dialect: process.env.DB_DIALECT as Dialect,
+          storage: process.env.DB_STORAGE,
+          logging: false
+      })
+        
+      var seedsConfig = {
+        storage: "sequelize",
+        storageOptions: {
+          sequelize: sequelize,
+          modelName: 'SequelizeData'
+        },
+        migrations: {
+          params: [
+            sequelize.getQueryInterface(),
+            sequelize.constructor
+          ],
+          path: "./seeders",
+          pattern: /\.js$/
+        }
+      };
 
-    await sequelize.addModels([ProductModel]);
-    await sequelize.sync();
-  });
+      seeder = new Umzug(seedsConfig);    
+      await seeder.up();
 
-  afterEach(async () => {
+      sequelize.addModels([ProductModel]);
+  })
+
+  afterEach(async ()=>{
+    await seeder.down();
     await sequelize.close();
-  });
-
+  })
+  
   it("should find a product", async () => {
     const facade = StoreCatalogFacadeFactory.create();
     await ProductModel.create({
@@ -28,6 +51,8 @@ describe("StoreCatalogFacade test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      createdAt: Date(),
+      updatedAt: Date()
     });
 
     const result = await facade.find({ id: "1" });
@@ -45,12 +70,16 @@ describe("StoreCatalogFacade test", () => {
       name: "Product 1",
       description: "Description 1",
       salesPrice: 100,
+      createdAt: Date(),
+      updatedAt: Date()
     });
     await ProductModel.create({
       id: "2",
       name: "Product 2",
       description: "Description 2",
       salesPrice: 200,
+      createdAt: Date(),
+      updatedAt: Date()
     });
 
     const result = await facade.findAll();
