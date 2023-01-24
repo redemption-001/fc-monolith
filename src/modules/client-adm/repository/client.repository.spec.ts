@@ -7,6 +7,7 @@ import ClientRepository from "./client.repository";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("ClientRepository test", () => {
 
@@ -20,7 +21,7 @@ describe("ClientRepository test", () => {
           storage: process.env.DB_STORAGE,
           logging: false
       })
-        
+
       var seedsConfig = {
         storage: "sequelize",
         storageOptions: {
@@ -32,7 +33,7 @@ describe("ClientRepository test", () => {
             sequelize.getQueryInterface(),
             sequelize.constructor
           ],
-          path: "./seeders",
+          path: sequelizeRC["seeders-path"],
           pattern: /\.js$/
         }
       };

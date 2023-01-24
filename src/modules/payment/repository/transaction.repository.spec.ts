@@ -7,6 +7,7 @@ import TransactionRepostiory from "./transaction.repository";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("TransactionRepository test", () => {
   let sequelize: Sequelize;
@@ -31,7 +32,7 @@ describe("TransactionRepository test", () => {
             sequelize.getQueryInterface(),
             sequelize.constructor
           ],
-          path: "./seeders",
+          path: sequelizeRC["seeders-path"],
           pattern: /\.js$/
         }
       };

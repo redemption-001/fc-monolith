@@ -18,6 +18,7 @@ import CheckoutFacadeFactory from "../factory/checkout-facade.factory";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("Checkout Facade Tests", ()=>{
     let sequelize: Sequelize;
@@ -42,7 +43,7 @@ describe("Checkout Facade Tests", ()=>{
                 sequelize.getQueryInterface(),
                 sequelize.constructor
               ],
-              path: "./seeders", // path to folder containing seeds
+              path: sequelizeRC["seeders-path"], // path to folder containing seeds
               pattern: /\.js$/
             }
           };
@@ -58,7 +59,6 @@ describe("Checkout Facade Tests", ()=>{
             OrderTransactionModel, TransactionModel,
             InvoiceModel, InvoiceItemModel, ProductInvoiceModel
         ]);
-
     })
 
     afterEach(async ()=>{
