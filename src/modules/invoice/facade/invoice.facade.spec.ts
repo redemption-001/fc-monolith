@@ -7,6 +7,7 @@ import ProductModel from "../repository/product.model";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("Invoice Facade Unit Tests", ()=>{
     let sequelize: Sequelize;
@@ -31,7 +32,7 @@ describe("Invoice Facade Unit Tests", ()=>{
               sequelize.getQueryInterface(),
               sequelize.constructor
             ],
-            path: "./seeders",
+            path: sequelizeRC["seeders-path"],
             pattern: /\.js$/
           }
         };

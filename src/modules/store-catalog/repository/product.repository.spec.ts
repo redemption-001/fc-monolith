@@ -4,6 +4,7 @@ import ProductRepository from "./product.repository";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("ProductRepository test", () => {
   let sequelize: Sequelize;
@@ -28,7 +29,7 @@ describe("ProductRepository test", () => {
             sequelize.getQueryInterface(),
             sequelize.constructor
           ],
-          path: "./seeders",
+          path: sequelizeRC["seeders-path"],
           pattern: /\.js$/
         }
       };

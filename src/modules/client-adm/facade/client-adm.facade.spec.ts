@@ -7,6 +7,7 @@ import ClientAdmFacade from "./client-adm.facade";
 var Umzug = require("umzug");
 import dotenv from "dotenv";
 import { Dialect } from "sequelize/types";
+var sequelizeRC = require("../../../../.sequelizerc");
 
 describe("ClientAdmFacade test", () => {
   let sequelize: Sequelize;
@@ -31,7 +32,7 @@ describe("ClientAdmFacade test", () => {
           sequelize.getQueryInterface(),
           sequelize.constructor
         ],
-        path: "./seeders",
+        path: sequelizeRC["seeders-path"],
         pattern: /\.js$/
       }
     };
